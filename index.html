@@ -1,405 +1,437 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Jack29437 — Roblox Developer</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rain</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #08080e;
-    --bg2: #0f0f18;
-    --bg3: #14141e;
-    --accent: #6c63ff;
-    --accent2: #a78bfa;
-    --text: #e8e8f0;
-    --muted: #64647a;
-    --border: #1c1c2e;
-    --card: #10101a;
-    --glow: rgba(108,99,255,0.12);
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #060a10;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    cursor: none;
   }
-  html { scroll-behavior: smooth; }
-  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; overflow-x: hidden; }
-  ::-webkit-scrollbar { width: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg2); }
-  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
 
-  nav {
-    position: fixed; top: 0; width: 100%; z-index: 100;
-    backdrop-filter: blur(24px); background: rgba(8,8,14,0.85);
-    border-bottom: 1px solid var(--border);
+  canvas {
+    position: fixed;
+    inset: 0;
+    display: block;
   }
-  .nav-inner {
-    max-width: 1100px; margin: 0 auto; padding: 0 2rem;
-    height: 64px; display: flex; align-items: center; justify-content: space-between;
+
+  /* custom cursor dot */
+  #cursor {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: rgba(180, 220, 255, 0.9);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999;
+    transform: translate(-50%, -50%);
+    transition: width 0.15s, height 0.15s, background 0.15s;
+    box-shadow: 0 0 12px rgba(140, 200, 255, 0.8), 0 0 30px rgba(100, 170, 255, 0.3);
   }
-  .logo {
-    font-weight: 900; font-size: 1.1rem;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+
+  #cursor-ring {
+    position: fixed;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(140, 200, 255, 0.3);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 998;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
   }
-  .nav-links { display: flex; gap: 2rem; list-style: none; }
-  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color 0.2s; }
-  .nav-links a:hover { color: var(--text); }
-  .btn { padding: 0.6rem 1.4rem; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block; }
-  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; box-shadow: 0 0 24px rgba(108,99,255,0.25); }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(108,99,255,0.45); }
-  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent2); background: var(--glow); }
 
-  .hero { min-height: 100vh; display: flex; align-items: center; position: relative; overflow: hidden; }
-  .hero-grid {
-    position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgba(108,99,255,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(108,99,255,0.06) 1px, transparent 1px);
-    background-size: 60px 60px;
-    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  /* ui buttons bottom right */
+  #ui {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    align-items: flex-end;
   }
-  .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; pointer-events: none; }
-  .orb-1 { width: 500px; height: 500px; background: #6c63ff; top: -100px; right: -80px; animation: drift1 12s ease-in-out infinite; }
-  .orb-2 { width: 350px; height: 350px; background: #a78bfa; bottom: -80px; left: -60px; animation: drift2 15s ease-in-out infinite; }
-  .orb-3 { width: 200px; height: 200px; background: #4f46e5; top: 40%; left: 40%; animation: drift3 9s ease-in-out infinite; }
-  @keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,40px)} }
-  @keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-30px)} }
-  @keyframes drift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-20px,20px) scale(1.2)} }
-  .particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-  .particle { position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: rgba(108,99,255,0.2); animation: floatUp linear infinite; white-space: nowrap; }
-  @keyframes floatUp { 0%{transform:translateY(110vh);opacity:0} 10%{opacity:1} 90%{opacity:0.25} 100%{transform:translateY(-10vh);opacity:0} }
 
-  .hero-content { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 0 2rem; padding-top: 80px; }
-  .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(108,99,255,0.08); border: 1px solid rgba(108,99,255,0.22); border-radius: 100px; padding: 0.4rem 1rem; font-size: 0.78rem; color: var(--accent2); font-weight: 600; margin-bottom: 1.75rem; }
-  .hero-badge .dot { width: 7px; height: 7px; background: #4ade80; border-radius: 50%; animation: blink 2s infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .hero h1 { font-size: clamp(2.8rem, 6vw, 5.2rem); font-weight: 900; line-height: 1.03; letter-spacing: -2.5px; margin-bottom: 1.5rem; }
-  .hero h1 .name { background: linear-gradient(135deg, #ffffff 0%, var(--accent2) 60%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
-  .hero h1 .role { color: var(--muted); font-weight: 300; font-size: 0.58em; display: block; margin-top: 0.2em; letter-spacing: -1px; }
-  .hero-desc { font-size: 1.05rem; color: var(--muted); max-width: 520px; margin-bottom: 2.5rem; line-height: 1.8; }
-  .hero-stats { display: flex; gap: 3rem; margin-bottom: 2.75rem; flex-wrap: wrap; }
-  .stat-num { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
-  .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 0.25rem; }
-  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
-
-  .divider { width: 100%; height: 1px; background: var(--border); }
-
-  section { max-width: 1100px; margin: 0 auto; padding: 5.5rem 2rem; }
-  .section-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); font-weight: 700; margin-bottom: 0.6rem; }
-  .section-title { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 0.75rem; }
-  .section-sub { color: var(--muted); font-size: 0.95rem; max-width: 500px; margin-bottom: 3rem; line-height: 1.75; }
-
-  /* SKILLS */
-  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
-  .skill-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; transition: all 0.3s; }
-  .skill-card:hover { border-color: rgba(108,99,255,0.35); transform: translateY(-5px); box-shadow: 0 24px 48px rgba(0,0,0,0.5); }
-  .skill-icon-wrap { width: 44px; height: 44px; border-radius: 11px; background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--accent2); margin-bottom: 1.1rem; }
-  .skill-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
-  .skill-desc { color: var(--muted); font-size: 0.88rem; line-height: 1.75; }
-
-  /* ANIMATIONS GRID */
-  .anim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-  .anim-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 1.25rem 1.25rem 1rem; transition: all 0.25s; cursor: default;
-    display: flex; flex-direction: column; gap: 0.5rem;
+  .rain-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(160, 210, 255, 0.55);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(160, 210, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    cursor: none;
+    transition: all 0.25s ease;
   }
-  .anim-card:hover { border-color: rgba(108,99,255,0.35); transform: translateY(-3px); box-shadow: 0 16px 36px rgba(0,0,0,0.5); }
-  .anim-preview {
-    width: 100%; height: 80px; border-radius: 9px;
-    background: linear-gradient(135deg, #0e0e1a, #16102a);
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.8rem; margin-bottom: 0.25rem;
-    position: relative; overflow: hidden;
+  .rain-btn:hover {
+    color: rgba(200, 235, 255, 0.95);
+    border-color: rgba(160, 210, 255, 0.35);
+    background: rgba(160, 210, 255, 0.07);
+    box-shadow: 0 0 20px rgba(100, 170, 255, 0.1);
   }
-  .anim-preview::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(108,99,255,0.08), transparent);
+  .rain-btn.active {
+    color: rgba(200, 235, 255, 1);
+    border-color: rgba(160, 210, 255, 0.6);
+    background: rgba(160, 210, 255, 0.12);
   }
-  .anim-name { font-size: 0.85rem; font-weight: 700; color: var(--text); }
-  .anim-tag { font-size: 0.7rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
 
-  /* TIMELINE */
-  .timeline { position: relative; padding-left: 1.75rem; }
-  .timeline::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 0; width: 1px; background: linear-gradient(to bottom, var(--accent) 0%, transparent 100%); }
-  .tl-item { position: relative; margin-bottom: 2.75rem; }
-  .tl-dot { position: absolute; left: -2.1rem; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); box-shadow: 0 0 0 3px rgba(108,99,255,0.2); }
-  .tl-year { font-size: 0.72rem; color: var(--accent2); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.3rem; font-family: 'JetBrains Mono', monospace; }
-  .tl-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .tl-desc { color: var(--muted); font-size: 0.88rem; line-height: 1.75; }
-
-  /* STATEMENT */
-  .statement-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 3rem; position: relative; overflow: hidden; }
-  .statement-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2), transparent); }
-  .statement-quote { font-size: clamp(1.05rem, 2.5vw, 1.3rem); font-weight: 500; line-height: 1.85; color: var(--text); max-width: 720px; }
-  .statement-quote span { color: var(--accent2); font-weight: 700; }
-  .statement-sig { margin-top: 2rem; font-size: 0.85rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-
-  /* CONTACT */
-  .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
-  .contact-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text); transition: all 0.25s; }
-  .contact-card:hover { border-color: rgba(108,99,255,0.35); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
-  .contact-icon { width: 44px; height: 44px; border-radius: 11px; background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent2); flex-shrink: 0; }
-  .contact-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; }
-  .contact-val { font-weight: 600; font-size: 0.92rem; margin-top: 0.1rem; }
-
-  footer { text-align: center; padding: 2.5rem 2rem; color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--border); }
-  footer .ai-note { margin-top: 0.6rem; font-size: 0.78rem; color: #3d3d52; }
-
-  @media(max-width: 640px) {
-    .nav-links { display: none; }
-    .contact-grid { grid-template-columns: 1fr; }
-    .hero-stats { gap: 1.75rem; }
-    .statement-card { padding: 2rem; }
-    .anim-grid { grid-template-columns: repeat(2, 1fr); }
+  #label {
+    position: fixed;
+    top: 2rem;
+    left: 2.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(140, 190, 255, 0.18);
+    z-index: 100;
+    user-select: none;
   }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-inner">
-    <div class="logo">Jack29437</div>
-    <ul class="nav-links">
-      <li><a href="#skills">Skills</a></li>
-      <li><a href="#animations">Animations</a></li>
-      <li><a href="#experience">Experience</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-    <a href="#contact" class="btn btn-primary">Hire Me</a>
-  </div>
-</nav>
+<canvas id="c"></canvas>
 
-<div class="hero">
-  <div class="hero-grid"></div>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="particles">
-    <span class="particle" style="left:5%;animation-duration:18s;animation-delay:0s">local player = game.Players.LocalPlayer</span>
-    <span class="particle" style="left:18%;animation-duration:22s;animation-delay:3s">function onTouched(hit)</span>
-    <span class="particle" style="left:32%;animation-duration:16s;animation-delay:7s">RemoteEvent:FireServer(data)</span>
-    <span class="particle" style="left:50%;animation-duration:20s;animation-delay:1s">AnimationTrack:Play()</span>
-    <span class="particle" style="left:64%;animation-duration:25s;animation-delay:5s">DataStore:SetAsync(key, value)</span>
-    <span class="particle" style="left:76%;animation-duration:19s;animation-delay:9s">repeat wait() until loaded</span>
-    <span class="particle" style="left:86%;animation-duration:23s;animation-delay:2s">workspace:FindFirstChild("Map")</span>
-    <span class="particle" style="left:42%;animation-duration:17s;animation-delay:11s">module.new = function()</span>
-  </div>
-  <div class="hero-content">
-    <div class="hero-badge"><span class="dot"></span> Available for work</div>
-    <h1>
-      <span class="name">Jack29437</span>
-      <span class="role">Roblox Developer</span>
-    </h1>
-    <p class="hero-desc">
-      I've been building on Roblox since 2020. Animations are what I do best, and scripting is what I back it up with.
-    </p>
-    <div class="hero-stats">
-      <div class="stat"><div class="stat-num">5</div><div class="stat-label">Years Experience</div></div>
-      <div class="stat"><div class="stat-num">1</div><div class="stat-label">Shipped Game</div></div>
-    </div>
-    <div class="hero-cta">
-      <a href="#contact" class="btn btn-secondary">Get In Touch</a>
-    </div>
-  </div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<div id="label">Rain</div>
+
+<div id="ui">
+  <button class="rain-btn active" id="btn-heavy">Heavy</button>
+  <button class="rain-btn" id="btn-medium">Medium</button>
+  <button class="rain-btn" id="btn-drizzle">Drizzle</button>
+  <button class="rain-btn" id="btn-thunder">Thunder</button>
 </div>
 
-<div class="divider"></div>
+<script>
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
 
-<!-- SKILLS -->
-<section id="skills">
-  <p class="section-label">What I Do</p>
-  <h2 class="section-title">Skills</h2>
-  <p class="section-sub">Animations first, scripting second.</p>
-  <div class="skills-grid">
-    <div class="skill-card">
-      <div class="skill-icon-wrap">&#9654;</div>
-      <div class="skill-name">Animations</div>
-      <div class="skill-desc">This is what I'm best at, no question. I've made a ton of animations over the years — characters, objects, cutscenes, all of it. I've actually made a good amount of Robux doing this, so it's not just a hobby, it's something people have been willing to pay for.</div>
-    </div>
-    <div class="skill-card">
-      <div class="skill-icon-wrap">{ }</div>
-      <div class="skill-name">Lua / Luau Scripting</div>
-      <div class="skill-desc">I won't pretend I'm a hardcore scripter — I can't do everything. But what I do know, I know well. I can write solid, working Luau code and I'm good at it. It's enough to bring my animations to life and build real game systems.</div>
-    </div>
-  </div>
-</section>
+// ── mouse state ─────────────────────────────────
+const mouse = { x: -999, y: -999, vx: 0, vy: 0, px: 0, py: 0 };
 
-<div class="divider"></div>
+const cursorDot  = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
 
-<!-- ANIMATIONS SHOWCASE -->
-<section id="animations">
-  <p class="section-label">Animation Work</p>
-  <h2 class="section-title">Animations</h2>
-  <p class="section-sub">A collection of animations I've made over the years. Everything handmade in the Roblox Animation Editor.</p>
-  <div class="anim-grid">
-    <div class="anim-card"><div class="anim-preview">&#9876;</div><div class="anim-name">Sword Idle</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128262;</div><div class="anim-name">Heavy Slash</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128007;</div><div class="anim-name">Roll Dodge</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128062;</div><div class="anim-name">Sprint Cycle</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127808;</div><div class="anim-name">Idle Breathing</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128168;</div><div class="anim-name">Death Fall</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#9889;</div><div class="anim-name">Dash Attack</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128293;</div><div class="anim-name">Finisher</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127774;</div><div class="anim-name">Jump + Land</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128736;</div><div class="anim-name">Gun Reload</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128123;</div><div class="anim-name">NPC Walk</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128170;</div><div class="anim-name">Victory Pose</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128578;</div><div class="anim-name">Emote Wave</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127775;</div><div class="anim-name">Spin Attack</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128095;</div><div class="anim-name">Block + Parry</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128640;</div><div class="anim-name">Jetpack Fly</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129354;</div><div class="anim-name">Climb Loop</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128251;</div><div class="anim-name">Sit Idle</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128142;</div><div class="anim-name">Pickup Item</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128296;</div><div class="anim-name">Tool Swing</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127939;</div><div class="anim-name">Crouch Walk</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128565;</div><div class="anim-name">Stagger Hit</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#9733;</div><div class="anim-name">Uppercut</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128064;</div><div class="anim-name">Look Around</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128481;</div><div class="anim-name">Dual Wield Idle</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128299;</div><div class="anim-name">Pistol ADS</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127992;</div><div class="anim-name">Magic Cast</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128017;</div><div class="anim-name">Sneak Idle</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128018;</div><div class="anim-name">Wall Hang</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129330;</div><div class="anim-name">Emote Dance</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129309;</div><div class="anim-name">Handshake</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128540;</div><div class="anim-name">Taunt</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128074;</div><div class="anim-name">Fist Pump</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128116;</div><div class="anim-name">NPC Idle Talk</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128119;</div><div class="anim-name">NPC Patrol</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129302;</div><div class="anim-name">NPC Alert</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128127;</div><div class="anim-name">Boss Roar</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128580;</div><div class="anim-name">Boss Slam</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128008;</div><div class="anim-name">Boss Walk</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128163;</div><div class="anim-name">Explosion React</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127987;</div><div class="anim-name">Flag Plant</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128203;</div><div class="anim-name">Use Terminal</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128275;</div><div class="anim-name">Open Door</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127869;</div><div class="anim-name">Eat Animation</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128138;</div><div class="anim-name">Drink Animation</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128137;</div><div class="anim-name">Inject / Heal</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128166;</div><div class="anim-name">Swim Cycle</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128692;</div><div class="anim-name">Bike Ride</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128661;</div><div class="anim-name">Car Enter</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#9875;</div><div class="anim-name">Boat Row</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128039;</div><div class="anim-name">Glide Float</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129332;</div><div class="anim-name">Backflip</div><div class="anim-tag">Movement</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128133;</div><div class="anim-name">Handstand</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129316;</div><div class="anim-name">Laugh</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128557;</div><div class="anim-name">Cry</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129327;</div><div class="anim-name">Shrug</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128079;</div><div class="anim-name">Clap</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#9996;</div><div class="anim-name">Peace Sign</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128400;</div><div class="anim-name">Levitate</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128128;</div><div class="anim-name">Ragdoll</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129445;</div><div class="anim-name">Knocked Out</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128116;</div><div class="anim-name">Get Up</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128148;</div><div class="anim-name">Stun Loop</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#9993;</div><div class="anim-name">Read / Hold Paper</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128247;</div><div class="anim-name">Take Photo</div><div class="anim-tag">Interaction</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128369;</div><div class="anim-name">Throw Object</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129354;</div><div class="anim-name">Spear Thrust</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128608;</div><div class="anim-name">Charge Up</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127941;</div><div class="anim-name">Power Release</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128007;</div><div class="anim-name">Slide Kick</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128246;</div><div class="anim-name">Sniper Scope</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128163;</div><div class="anim-name">Grenade Throw</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128481;</div><div class="anim-name">Knife Stab</div><div class="anim-tag">Combat</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127758;</div><div class="anim-name">Teleport In</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127757;</div><div class="anim-name">Teleport Out</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128171;</div><div class="anim-name">On Fire React</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#10052;</div><div class="anim-name">Frozen Pose</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128560;</div><div class="anim-name">Scared Idle</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128532;</div><div class="anim-name">NPC Sad Walk</div><div class="anim-tag">NPC</div></div>
-    <div class="anim-card"><div class="anim-preview">&#129351;</div><div class="anim-name">Crown Raise</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127925;</div><div class="anim-name">Air Guitar</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#127996;</div><div class="anim-name">Robot Dance</div><div class="anim-tag">Emote</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128378;</div><div class="anim-name">Sleep</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#9729;</div><div class="anim-name">Float Idle</div><div class="anim-tag">Character</div></div>
-    <div class="anim-card"><div class="anim-preview">&#128153;</div><div class="anim-name">Bow Down</div><div class="anim-tag">Emote</div></div>
-  </div>
-</section>
+let ringX = 0, ringY = 0;
 
-<div class="divider"></div>
+window.addEventListener('mousemove', e => {
+  mouse.vx = e.clientX - mouse.px;
+  mouse.vy = e.clientY - mouse.py;
+  mouse.px = mouse.x;
+  mouse.py = mouse.y;
+  mouse.x  = e.clientX;
+  mouse.y  = e.clientY;
 
-<!-- EXPERIENCE -->
-<section id="experience">
-  <p class="section-label">My Story</p>
-  <h2 class="section-title">How I Got Here</h2>
-  <p class="section-sub">Started in 2020 and never really stopped.</p>
-  <div class="timeline">
-    <div class="tl-item">
-      <div class="tl-dot"></div>
-      <div class="tl-year">2020 — The Start</div>
-      <div class="tl-title">Opened Roblox Studio for the First Time</div>
-      <div class="tl-desc">Started playing around with Roblox Studio with no idea what I was doing. Wrote my first scripts, broke a lot of things, and slowly figured out how Lua actually worked.</div>
-    </div>
-    <div class="tl-item">
-      <div class="tl-dot"></div>
-      <div class="tl-year">2021–2022 — Finding My Thing</div>
-      <div class="tl-title">Discovered Animations Were My Strength</div>
-      <div class="tl-desc">Spent a lot of time in the Animation Editor and realized this was what I was good at. Started making animations for other people and getting paid in Robux for it.</div>
-    </div>
-    <div class="tl-item">
-      <div class="tl-dot"></div>
-      <div class="tl-year">2023–2024 — Building More</div>
-      <div class="tl-title">Combining Animations and Scripting</div>
-      <div class="tl-desc">Started combining my animation work with scripting — hooking everything up properly, building systems around it, and making full game features that actually felt good to play.</div>
-    </div>
-    <div class="tl-item">
-      <div class="tl-dot"></div>
-      <div class="tl-year">2025 — Shipped</div>
-      <div class="tl-title">Finished and Released My First Game</div>
-      <div class="tl-desc">Finally put out a complete game. Built everything myself — the scripts, the animations, the whole thing. Probably the most I've learned in a single project.</div>
-    </div>
-  </div>
-</section>
+  cursorDot.style.left = e.clientX + 'px';
+  cursorDot.style.top  = e.clientY + 'px';
+});
 
-<div class="divider"></div>
+// lazy-follow ring
+function animateRing() {
+  ringX += (mouse.x - ringX) * 0.12;
+  ringY += (mouse.y - ringY) * 0.12;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top  = ringY + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
 
-<!-- STATEMENT -->
-<section id="statement">
-  <p class="section-label">One Thing I Want You to Know</p>
-  <h2 class="section-title">I Keep It Real</h2>
-  <div class="statement-card">
-    <p class="statement-quote">
-      Everything I make is done by hand. <span>No AI-generated scripts, no stolen assets, no shortcuts.</span>
-      When you work with me, every animation was made by me and every line of code was written by me.
-      I've put in the time since 2020 to actually get good at this — and that's exactly what you're getting.
-    </p>
-    <div class="statement-sig">— Jack29437, Roblox Developer since 2020</div>
-  </div>
-</section>
+// ── scene config ─────────────────────────────────
+let config = {
+  dropCount:   700,
+  speed:       [18, 32],
+  length:      [40, 90],
+  wind:        0.18,      // slant factor
+  splash:      true,
+  fog:         true,
+  thunder:     false,
+  bgColor:     '#060a10',
+};
 
-<div class="divider"></div>
+const PRESETS = {
+  heavy:   { dropCount: 700, speed: [18,32], length: [40,90],  wind: 0.18, splash: true,  fog: true,  thunder: false },
+  medium:  { dropCount: 320, speed: [12,22], length: [28,60],  wind: 0.14, splash: true,  fog: true,  thunder: false },
+  drizzle: { dropCount: 110, speed: [5, 12], length: [10,28],  wind: 0.06, splash: false, fog: false, thunder: false },
+  thunder: { dropCount: 850, speed: [24,40], length: [60,120], wind: 0.22, splash: true,  fog: true,  thunder: true  },
+};
 
-<!-- CONTACT -->
-<section id="contact">
-  <p class="section-label">Work With Me</p>
-  <h2 class="section-title">Get In Touch</h2>
-  <p class="section-sub">Open to freelance work, team projects, and collabs. Reach out on any of these.</p>
-  <div class="contact-grid">
-    <!-- To update your Roblox link: replace Jack29437 in the href with your actual profile URL if needed -->
-    <a href="https://www.roblox.com/users/search?keyword=Jack29437" class="contact-card">
-      <div class="contact-icon">RBX</div>
-      <div><div class="contact-label">Roblox</div><div class="contact-val">Jack29437</div></div>
-    </a>
-    <a href="https://discord.com/users/the._.blade" class="contact-card">
-      <div class="contact-icon">DSC</div>
-      <div><div class="contact-label">Discord</div><div class="contact-val">the._.blade</div></div>
-    </a>
-    <a href="https://twitter.com/mister_snacky" class="contact-card">
-      <div class="contact-icon">X</div>
-      <div><div class="contact-label">Twitter / X</div><div class="contact-val">@mister_snacky</div></div>
-    </a>
-  </div>
-</section>
+// ── resize ────────────────────────────────────────
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', () => { resize(); initDrops(); });
+resize();
 
-<footer>
-  <p>Jack29437 &nbsp;&middot;&nbsp; Roblox Developer &nbsp;&middot;&nbsp; Building since 2020</p>
-  <p class="ai-note">This website was built with the help of AI. The work shown on it was not.</p>
-</footer>
+// ── drops ─────────────────────────────────────────
+let drops = [];
 
+function makeDropRandom() {
+  const speed = config.speed[0] + Math.random() * (config.speed[1] - config.speed[0]);
+  return {
+    x:      Math.random() * canvas.width,
+    y:      Math.random() * -canvas.height,
+    speed,
+    length: config.length[0] + Math.random() * (config.length[1] - config.length[0]),
+    alpha:  0.25 + Math.random() * 0.55,
+    width:  0.5 + Math.random() * 0.9,
+    // cursor distortion state
+    pushed: 0,
+  };
+}
+
+function initDrops() {
+  drops = [];
+  for (let i = 0; i < config.dropCount; i++) {
+    const d = makeDropRandom();
+    d.y = Math.random() * canvas.height; // spread on load
+    drops.push(d);
+  }
+}
+initDrops();
+
+// ── splash pool ───────────────────────────────────
+const splashes = [];
+
+function addSplash(x, y, force = 1) {
+  if (!config.splash) return;
+  const count = 2 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < count; i++) {
+    const angle = (-Math.PI * 0.6) + Math.random() * (Math.PI * 0.2) - Math.PI * 0.1;
+    const spd   = (1.5 + Math.random() * 3) * force;
+    splashes.push({
+      x, y,
+      vx: Math.cos(angle) * spd * (Math.random() < 0.5 ? 1 : -1),
+      vy: -Math.sin(Math.abs(angle)) * spd,
+      alpha: 0.55 + Math.random() * 0.3,
+      r: 0,
+    });
+  }
+  // ellipse ripple
+  splashes.push({ type:'ripple', x, y, r:0, maxR: 8 + Math.random()*10*force, alpha: 0.35 });
+}
+
+// ── cursor ripples (click) ────────────────────────
+const cursorRipples = [];
+
+window.addEventListener('click', e => {
+  for (let i = 0; i < 6; i++) addSplash(e.clientX, e.clientY, 2.5);
+  cursorRipples.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 0.7 });
+});
+
+// ── thunder state ─────────────────────────────────
+let flashAlpha   = 0;
+let nextThunder  = 0;
+let rumbleTimer  = 0;
+
+function scheduleThunder() {
+  nextThunder = performance.now() + 3000 + Math.random() * 8000;
+}
+scheduleThunder();
+
+// ── fog layers ────────────────────────────────────
+const fogLayers = [
+  { x: 0,   y: canvas.height * 0.55, vy: -0.08, alpha: 0.07 },
+  { x: 200, y: canvas.height * 0.65, vy: -0.05, alpha: 0.05 },
+  { x: -80, y: canvas.height * 0.72, vy: -0.04, alpha: 0.04 },
+];
+
+// ── off-screen splash canvas ──────────────────────
+// (nothing extra needed; just draw into main ctx)
+
+// ── draw loop ─────────────────────────────────────
+let lastTime = 0;
+const WIND_SLANT = 0.18;
+
+function draw(now) {
+  const dt = Math.min((now - lastTime) / 16.67, 3); // normalise to 60fps
+  lastTime = now;
+
+  // background
+  ctx.fillStyle = config.bgColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // subtle ground reflection gradient
+  const gGrad = ctx.createLinearGradient(0, canvas.height * 0.8, 0, canvas.height);
+  gGrad.addColorStop(0, 'rgba(40,80,130,0)');
+  gGrad.addColorStop(1, 'rgba(40,80,130,0.06)');
+  ctx.fillStyle = gGrad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // fog
+  if (config.fog) {
+    for (const fl of fogLayers) {
+      const fg = ctx.createRadialGradient(
+        canvas.width / 2, fl.y, 0,
+        canvas.width / 2, fl.y, canvas.width * 0.7
+      );
+      fg.addColorStop(0, `rgba(100,150,200,${fl.alpha})`);
+      fg.addColorStop(1, 'rgba(100,150,200,0)');
+      ctx.fillStyle = fg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      fl.y += fl.vy * dt;
+      if (fl.y < -100) fl.y = canvas.height + 100;
+    }
+  }
+
+  // thunder flash
+  if (config.thunder) {
+    const nt = now;
+    if (nt >= nextThunder) {
+      flashAlpha = 0.55 + Math.random() * 0.35;
+      scheduleThunder();
+    }
+    if (flashAlpha > 0) {
+      ctx.fillStyle = `rgba(220,235,255,${flashAlpha})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      flashAlpha -= 0.06 * dt;
+      if (flashAlpha < 0) flashAlpha = 0;
+    }
+  }
+
+  // ── cursor distortion halo ──────────────────────
+  const halo = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 120);
+  halo.addColorStop(0, 'rgba(140,200,255,0.055)');
+  halo.addColorStop(1, 'rgba(140,200,255,0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // ── drops ──────────────────────────────────────
+  const wind = config.wind;
+
+  for (const d of drops) {
+    // cursor deflection — drops near cursor get pushed sideways
+    const dx = d.x - mouse.x;
+    const dy = d.y - mouse.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const RADIUS = 90;
+    let deflect = 0;
+    if (dist < RADIUS && dist > 0) {
+      const force = (1 - dist / RADIUS);
+      deflect = (dx / dist) * force * 4;
+      d.pushed = Math.max(d.pushed, force);
+    } else {
+      d.pushed *= 0.92;
+    }
+
+    const slant = wind + deflect * 0.08 + (mouse.vx * 0.002);
+    const ex = d.x + slant * d.length;
+    const ey = d.y + d.length;
+
+    // motion blur style: faded at top, solid at bottom
+    const grad = ctx.createLinearGradient(d.x, d.y, ex, ey);
+    grad.addColorStop(0,   `rgba(180,215,255,0)`);
+    grad.addColorStop(0.4, `rgba(180,215,255,${d.alpha * 0.4})`);
+    grad.addColorStop(1,   `rgba(200,230,255,${d.alpha})`);
+
+    ctx.beginPath();
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(ex, ey);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth   = d.width + d.pushed * 0.6;
+    ctx.lineCap     = 'round';
+    ctx.stroke();
+
+    d.x += (d.speed * slant) * dt;
+    d.y += d.speed * dt;
+
+    // reset
+    if (d.y - d.length > canvas.height || d.x > canvas.width + 100 || d.x < -100) {
+      addSplash(d.x, canvas.height - 1);
+      const nd = makeDropRandom();
+      // reset y to top, x random
+      nd.y = -nd.length - Math.random() * 40;
+      Object.assign(d, nd);
+    }
+  }
+
+  // ── splashes ────────────────────────────────────
+  for (let i = splashes.length - 1; i >= 0; i--) {
+    const s = splashes[i];
+    if (s.type === 'ripple') {
+      ctx.beginPath();
+      ctx.ellipse(s.x, s.y, s.r * 2.5, s.r * 0.5, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(180,215,255,${s.alpha})`;
+      ctx.lineWidth   = 0.7;
+      ctx.stroke();
+      s.r     += 1.2 * dt;
+      s.alpha -= 0.025 * dt;
+      if (s.alpha <= 0 || s.r > s.maxR) { splashes.splice(i, 1); }
+    } else {
+      // droplet arc
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,220,255,${s.alpha})`;
+      ctx.fill();
+      s.vx    *= 0.88;
+      s.vy    += 0.4 * dt; // gravity
+      s.x     += s.vx * dt;
+      s.y     += s.vy * dt;
+      s.alpha -= 0.035 * dt;
+      if (s.alpha <= 0) splashes.splice(i, 1);
+    }
+  }
+
+  // ── click ripples ────────────────────────────────
+  for (let i = cursorRipples.length - 1; i >= 0; i--) {
+    const cr = cursorRipples[i];
+    ctx.beginPath();
+    ctx.arc(cr.x, cr.y, cr.r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(160,210,255,${cr.alpha})`;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    cr.r     += 3.5 * dt;
+    cr.alpha -= 0.028 * dt;
+    if (cr.alpha <= 0) cursorRipples.splice(i, 1);
+  }
+
+  requestAnimationFrame(draw);
+}
+
+requestAnimationFrame(t => { lastTime = t; requestAnimationFrame(draw); });
+
+// ── button controls ───────────────────────────────
+const btns = {
+  'btn-heavy':   'heavy',
+  'btn-medium':  'medium',
+  'btn-drizzle': 'drizzle',
+  'btn-thunder': 'thunder',
+};
+
+Object.entries(btns).forEach(([id, preset]) => {
+  document.getElementById(id).addEventListener('click', () => {
+    Object.assign(config, PRESETS[preset], { bgColor: '#060a10' });
+    initDrops();
+    // update active state
+    document.querySelectorAll('.rain-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (preset === 'thunder') scheduleThunder();
+  });
+});
+
+// ── cursor size reacts to speed ───────────────────
+setInterval(() => {
+  const speed = Math.sqrt(mouse.vx**2 + mouse.vy**2);
+  const s = Math.min(speed / 5, 3);
+  cursorDot.style.width  = (8 + s * 6) + 'px';
+  cursorDot.style.height = (8 + s * 6) + 'px';
+  cursorRing.style.width  = (36 + s * 12) + 'px';
+  cursorRing.style.height = (36 + s * 12) + 'px';
+  mouse.vx *= 0.7;
+  mouse.vy *= 0.7;
+}, 30);
+</script>
 </body>
 </html>
